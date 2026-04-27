@@ -26,7 +26,9 @@ If `embedRegistry` is unavailable in your Obsidian build, the plugin stays idle.
 
 ## Cover metadata format
 
-In your target canvas file, add frontmatter into advanced JSON canvas metadata:
+Use the canvas Properties panel to configure cover fields. The plugin reads those values from the target canvas frontmatter.
+
+You can still inspect the underlying JSON structure (reference only):
 
 ```json
 {
@@ -48,6 +50,83 @@ In your target canvas file, add frontmatter into advanced JSON canvas metadata:
 - `Canvas background key`: frontmatter key for canvas view backgrounds, default is `cover`.
 - `Overlay opacity`: transparency of the cover layer.
 - `Debug mode`: console logs.
+
+## Detailed usage
+
+### 1) Install and enable
+
+1. Install and enable Advanced Canvas.
+2. Install and enable Canvas Cover Overlay.
+3. Open plugin settings and confirm `Enable overlay` and `Enable canvas background` are configured as needed.
+
+### 2) Configure cover fields from canvas Properties (recommended)
+
+1. Open the target `.canvas` file.
+2. Open the Properties panel.
+3. Add or edit fields. The default key is `cover`.
+4. Save the canvas. Embedded thumbnails and canvas backgrounds will update from these fields.
+
+Simple setup (same field for thumbnail and background):
+
+- Field name: `cover`
+- Field value: `assets/canvas-cover.png`
+
+Underlying JSON looks like this (for reference only):
+
+```json
+{
+    "metadata": {
+        "version": "1.0-1.0",
+        "frontmatter": {
+            "cover": "assets/canvas-cover.png"
+        }
+    },
+    "nodes": [],
+    "edges": []
+}
+```
+
+### 3) Use different keys for thumbnail and background
+
+If you want different images:
+
+1. In plugin settings, set:
+   - `Embed cover key` (for embedded thumbnails), for example `embedCover`
+   - `Canvas background key` (for canvas view background), for example `bgCover`
+2. In the target canvas Properties panel, add matching fields:
+   - `embedCover: assets/embed-thumb.png`
+   - `bgCover: assets/background.png`
+
+Underlying JSON (reference only):
+
+```json
+{
+    "metadata": {
+        "version": "1.0-1.0",
+        "frontmatter": {
+            "embedCover": "assets/embed-thumb.png",
+            "bgCover": "assets/background.png"
+        }
+    },
+    "nodes": [],
+    "edges": []
+}
+```
+
+### 4) Path recommendations
+
+1. Prefer vault-relative paths or wiki links.
+2. Only `https` is supported for network images.
+3. Local absolute paths are not supported (for example `C:\\...` or `file:///...`).
+
+### 5) Refresh and debugging
+
+1. After changing fields, run `Reload embed cover hooks` to refresh immediately.
+2. If it does not update, enable `Debug mode` and check Developer Console logs.
+3. Check these items first:
+   - Key names match plugin settings.
+   - Image paths exist.
+   - Files are inside the vault.
 
 ## Commands
 
