@@ -42,7 +42,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 			.setDesc("Only applies to .canvas embeds.")
 			.addToggle((toggle) => toggle
 				.setValue(this.plugin.settings.enableOverlay)
-				.onChange(async (value) => {
+				.onChange((value) => {
 					this.plugin.settings.enableOverlay = value;
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:enable-overlay");
@@ -55,7 +55,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setPlaceholder("Cover")
 				.setValue(this.plugin.settings.embedCoverKey)
-				.onChange(async (value) => {
+				.onChange((value) => {
 					this.plugin.settings.embedCoverKey = value.trim();
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:embed-cover-key");
@@ -67,7 +67,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				slider.setLimits(0, 100, 1);
 				slider.setDynamicTooltip();
 				slider.setValue(Math.round(this.plugin.settings.overlayOpacity * 100));
-				slider.onChange(async (value) => {
+				slider.onChange((value) => {
 					this.plugin.settings.overlayOpacity = value / 100;
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:overlay-opacity");
@@ -79,7 +79,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 			.setDesc("Apply resolved cover image to opened canvas views.")
 			.addToggle((toggle) => toggle
 				.setValue(this.plugin.settings.enableCanvasBackground)
-				.onChange(async (value) => {
+				.onChange((value) => {
 					this.plugin.settings.enableCanvasBackground = value;
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:enable-canvas-background");
@@ -90,7 +90,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 			.addText((text) => text
 				.setPlaceholder("Cover")
 				.setValue(this.plugin.settings.canvasBackgroundCoverKey)
-				.onChange(async (value) => {
+				.onChange((value) => {
 					this.plugin.settings.canvasBackgroundCoverKey = value.trim();
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:canvas-background-key");
@@ -103,7 +103,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				slider.setLimits(0, 100, 1);
 				slider.setDynamicTooltip();
 				slider.setValue(Math.round(this.plugin.settings.canvasBackgroundOpacity * 100));
-				slider.onChange(async (value) => {
+				slider.onChange((value) => {
 					this.plugin.settings.canvasBackgroundOpacity = value / 100;
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:canvas-background-opacity");
@@ -117,7 +117,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 			.setDesc("Log selector and parsing diagnostics to console.")
 			.addToggle((toggle) => toggle
 				.setValue(this.plugin.settings.debugMode)
-				.onChange(async (value) => {
+				.onChange((value) => {
 					this.plugin.settings.debugMode = value;
 					this.plugin.queueSettingsSave();
 					this.plugin.onSettingsChanged("setting:debug");
