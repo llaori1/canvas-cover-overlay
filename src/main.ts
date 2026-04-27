@@ -83,7 +83,7 @@ export default class CanvasCoverOverlayPlugin extends Plugin {
 		});
 	}
 
-	async onSettingsChanged(reason: string): Promise<void> {
+	onSettingsChanged(reason: string): void {
 		this.debugLog("Settings changed", reason);
 		const isCanvasBackgroundOnlyChange = reason === "setting:canvas-background-opacity" || reason === "setting:enable-canvas-background";
 		const shouldReloadEmbedHooks = !isCanvasBackgroundOnlyChange;

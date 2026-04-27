@@ -45,7 +45,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableOverlay = value;
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:enable-overlay");
+					this.plugin.onSettingsChanged("setting:enable-overlay");
 				}));
 
 
@@ -58,7 +58,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.embedCoverKey = value.trim();
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:embed-cover-key");
+					this.plugin.onSettingsChanged("setting:embed-cover-key");
 				}));
 		new Setting(containerEl)
 			.setName("Overlay opacity")
@@ -70,7 +70,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				slider.onChange(async (value) => {
 					this.plugin.settings.overlayOpacity = value / 100;
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:overlay-opacity");
+					this.plugin.onSettingsChanged("setting:overlay-opacity");
 				});
 			});
 
@@ -82,7 +82,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableCanvasBackground = value;
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:enable-canvas-background");
+					this.plugin.onSettingsChanged("setting:enable-canvas-background");
 				}));
 		new Setting(containerEl)
 			.setName("Canvas background key")
@@ -93,7 +93,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.canvasBackgroundCoverKey = value.trim();
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:canvas-background-key");
+					this.plugin.onSettingsChanged("setting:canvas-background-key");
 				}));
 
 		new Setting(containerEl)
@@ -106,7 +106,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				slider.onChange(async (value) => {
 					this.plugin.settings.canvasBackgroundOpacity = value / 100;
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:canvas-background-opacity");
+					this.plugin.onSettingsChanged("setting:canvas-background-opacity");
 				});
 			});
 
@@ -120,7 +120,7 @@ export class CanvasCoverOverlaySettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.debugMode = value;
 					this.plugin.queueSettingsSave();
-					await this.plugin.onSettingsChanged("setting:debug");
+					this.plugin.onSettingsChanged("setting:debug");
 				}));
 	}
 }
