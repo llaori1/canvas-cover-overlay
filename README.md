@@ -6,6 +6,8 @@ It lets you customize each canvas with its own embedded canvas thumbnail and can
 
 中文说明文档: [README.zh-CN.md](README.zh-CN.md)
 
+![Function Demonstration](docs/ezgif-51b8cf690796419f.gif)
+
 ## What it does
 
 - Only affects file nodes that point to `.canvas` files.
