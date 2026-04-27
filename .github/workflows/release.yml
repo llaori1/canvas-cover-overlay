@@ -1,0 +1,86 @@
+name: Release Obsidian plugin
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (x.y.z). Leave empty to use manifest.json version"
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: resolve_tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          else
+            tag="${{ github.event.inputs.tag }}"
+            if [ -z "$tag" ]; then
+              tag="$(node -p "require('./manifest.json').version")"
+            fi
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: npm
+
+      - name: Build plugin
+        run: |
+          npm ci
+          npm run build
+
+      - name: Validate release version and assets
+        run: |
+          tag="${{ steps.resolve_tag.outputs.tag }}"
+          if ! echo "$tag" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Tag '$tag' is not a valid semver tag (x.y.z)"
+            exit 1
+          fi
+
+          manifest_version="$(node -p "require('./manifest.json').version")"
+
+          if [ "$tag" != "$manifest_version" ]; then
+            echo "Tag '$tag' does not match manifest version '$manifest_version'"
+            exit 1
+          fi
+
+          TAG="$tag" node -e "const tag=process.env.TAG; const v=require('./versions.json'); if(!v[tag]){console.error('versions.json missing entry for ' + tag); process.exit(1)}"
+
+          test -f main.js
+          test -f manifest.json
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.resolve_tag.outputs.tag }}"
+          assets="main.js manifest.json"
+          if [ -f styles.css ]; then
+            assets="$assets styles.css"
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" $assets --clobber
+            exit 0
+          fi
+
+          gh release create "$tag" \
+            --title="$tag" \
+            --draft \
+            $assets
