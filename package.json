@@ -1,6 +1,6 @@
 {
 	"name": "canvas-cover-overlay",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Customize each canvas with its own embedded canvas thumbnail and canvas view background.",
 	"main": "main.js",
 	"type": "module",
