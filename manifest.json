@@ -1,9 +1,9 @@
 {
 	"id": "canvas-cover-overlay",
 	"name": "Canvas Cover Overlay",
-	"version": "1.0.2",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Customize each canvas with its own embedded canvas thumbnail and canvas view background.",
-	"author": "llaroi",
+	"author": "llaori1",
 	"isDesktopOnly": true
 }
