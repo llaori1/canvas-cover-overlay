@@ -44,7 +44,12 @@ export class CoverResolver {
 	}
 
 	invalidate(path: string): void {
-		this.cache.delete(normalizePath(path));
+		const normalizedPath = normalizePath(path);
+		for (const cacheKey of Array.from(this.cache.keys())) {
+			if (cacheKey === normalizedPath || cacheKey.startsWith(`${normalizedPath}::`)) {
+				this.cache.delete(cacheKey);
+			}
+		}
 	}
 
 	async resolveNodeCovers(hostCanvasFile: TFile): Promise<NodeCover[]> {
@@ -54,6 +59,8 @@ export class CoverResolver {
 		}
 
 		const results: NodeCover[] = [];
+		const settings = this.settingsProvider();
+
 		for (const node of payload.nodes) {
 			if (node.type !== "file" || !node.file || !node.id) {
 				continue;
@@ -69,7 +76,7 @@ export class CoverResolver {
 				continue;
 			}
 
-			const coverUrl = await this.resolveCoverUrl(targetFile);
+			const coverUrl = await this.resolveCoverUrl(targetFile, settings.embedCoverKey);
 			if (!coverUrl) {
 				continue;
 			}
@@ -84,8 +91,8 @@ export class CoverResolver {
 		return results;
 	}
 
-	async resolveCoverUrlForCanvas(targetCanvasFile: TFile): Promise<string | null> {
-		return this.resolveCoverUrl(targetCanvasFile);
+	async resolveCoverUrlForCanvas(targetCanvasFile: TFile, key: string): Promise<string | null> {
+		return this.resolveCoverUrl(targetCanvasFile, key);
 	}
 
 	private async readCanvasPayload(canvasFile: TFile): Promise<CanvasPayload | null> {
@@ -193,9 +200,15 @@ export class CoverResolver {
 		return /^[a-zA-Z]:[\\/]/.test(value);
 	}
 
-	private async resolveCoverUrl(targetCanvasFile: TFile): Promise<string | null> {
+	private buildCacheKey(path: string, key: string): string {
+		return `${normalizePath(path)}::${key.trim().toLowerCase()}`;
+	}
+
+	private async resolveCoverUrl(targetCanvasFile: TFile, frontmatterKey: string): Promise<string | null> {
 		const normalizedTargetPath = normalizePath(targetCanvasFile.path);
-		const cached = this.cache.get(normalizedTargetPath);
+		const effectiveKey = frontmatterKey.trim() || this.settingsProvider().embedCoverKey;
+		const cacheKey = this.buildCacheKey(normalizedTargetPath, effectiveKey);
+		const cached = this.cache.get(cacheKey);
 		if (cached && cached.mtime === targetCanvasFile.stat.mtime) {
 			return cached.url;
 		}
@@ -203,56 +216,51 @@ export class CoverResolver {
 		const payload = await this.readCanvasPayload(targetCanvasFile);
 		const frontmatter = payload?.metadata?.frontmatter;
 		if (!frontmatter) {
-			this.cache.set(normalizedTargetPath, { mtime: targetCanvasFile.stat.mtime, url: null });
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
 			return null;
 		}
 
-		const settings = this.settingsProvider();
-		const keys = [settings.frontmatterCoverKey, ...settings.fallbackCoverKeys.split(",")]
-			.map((value) => value.trim())
-			.filter((value, index, values) => value.length > 0 && values.indexOf(value) === index);
-
-		for (const key of keys) {
-			const value = frontmatter[key];
-			if (typeof value !== "string" || value.trim().length === 0) {
-				continue;
-			}
-
-			const normalizedCoverReference = this.normalizeCoverReference(value);
-			const externalUrl = this.normalizeSupportedExternalUrl(normalizedCoverReference);
-			if (externalUrl) {
-				this.cache.set(normalizedTargetPath, { mtime: targetCanvasFile.stat.mtime, url: externalUrl });
-				return externalUrl;
-			}
-
-			if (this.isUnsupportedExternalUrl(normalizedCoverReference)) {
-				this.debugLog("Unsupported cover URL protocol", normalizedCoverReference, "from", targetCanvasFile.path);
-				continue;
-			}
-
-			if (this.isWindowsAbsolutePath(normalizedCoverReference)) {
-				this.debugLog("Local absolute paths are unsupported. Use a vault path instead", normalizedCoverReference, "from", targetCanvasFile.path);
-				continue;
-			}
-
-			const normalizedCoverPath = this.resolveTargetCanvasPath(targetCanvasFile.path, normalizedCoverReference);
-			if (!normalizedCoverPath) {
-				continue;
-			}
-
-			const coverFile = this.app.vault.getAbstractFileByPath(normalizedCoverPath);
-			if (!(coverFile instanceof TFile)) {
-				this.debugLog("Cover file missing", normalizedCoverPath, "from", targetCanvasFile.path);
-				continue;
-			}
-
-			const url = this.app.vault.getResourcePath(coverFile);
-			this.cache.set(normalizedTargetPath, { mtime: targetCanvasFile.stat.mtime, url });
-			return url;
+		const value = frontmatter[effectiveKey];
+		if (typeof value !== "string" || value.trim().length === 0) {
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
+			return null;
 		}
 
-		this.cache.set(normalizedTargetPath, { mtime: targetCanvasFile.stat.mtime, url: null });
-		return null;
+		const normalizedCoverReference = this.normalizeCoverReference(value);
+		const externalUrl = this.normalizeSupportedExternalUrl(normalizedCoverReference);
+		if (externalUrl) {
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: externalUrl });
+			return externalUrl;
+		}
+
+		if (this.isUnsupportedExternalUrl(normalizedCoverReference)) {
+			this.debugLog("Unsupported cover URL protocol", normalizedCoverReference, "from", targetCanvasFile.path);
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
+			return null;
+		}
+
+		if (this.isWindowsAbsolutePath(normalizedCoverReference)) {
+			this.debugLog("Local absolute paths are unsupported. Use a vault path instead", normalizedCoverReference, "from", targetCanvasFile.path);
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
+			return null;
+		}
+
+		const normalizedCoverPath = this.resolveTargetCanvasPath(targetCanvasFile.path, normalizedCoverReference);
+		if (!normalizedCoverPath) {
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
+			return null;
+		}
+
+		const coverFile = this.app.vault.getAbstractFileByPath(normalizedCoverPath);
+		if (!(coverFile instanceof TFile)) {
+			this.debugLog("Cover file missing", normalizedCoverPath, "from", targetCanvasFile.path);
+			this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url: null });
+			return null;
+		}
+
+		const url = this.app.vault.getResourcePath(coverFile);
+		this.cache.set(cacheKey, { mtime: targetCanvasFile.stat.mtime, url });
+		return url;
 	}
 
 	private dirname(path: string): string {

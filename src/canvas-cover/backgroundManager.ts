@@ -28,7 +28,7 @@ export class BackgroundManager {
 		const settings = settingsProvider();
 		const opacity = this.clampOpacity(settings.canvasBackgroundOpacity);
 		const leaves = this.app.workspace.getLeavesOfType("canvas");
-		const coverUrl = await resolver.resolveCoverUrlForCanvas(canvasFile);
+		const coverUrl = await resolver.resolveCoverUrlForCanvas(canvasFile, settings.canvasBackgroundCoverKey);
 
 		for (const leaf of leaves) {
 			const view = leaf.view as CanvasViewLike;
@@ -68,7 +68,7 @@ export class BackgroundManager {
 
 			let coverUrl = coverUrlCache.get(view.file.path);
 			if (coverUrl === undefined) {
-				coverUrl = await resolver.resolveCoverUrlForCanvas(view.file);
+				coverUrl = await resolver.resolveCoverUrlForCanvas(view.file, settings.canvasBackgroundCoverKey);
 				coverUrlCache.set(view.file.path, coverUrl);
 			}
 			this.applyLeafBackground(leaf, view.file.path, coverUrl, opacity);

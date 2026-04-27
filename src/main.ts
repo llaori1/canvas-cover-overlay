@@ -367,9 +367,18 @@ export default class CanvasCoverOverlayPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<CanvasCoverSettings>);
-		if (!this.settings.frontmatterCoverKey) {
-			this.settings.frontmatterCoverKey = DEFAULT_SETTINGS.frontmatterCoverKey;
+		const loadedRaw = await this.loadData() as Record<string, unknown> | null;
+		const loaded = (loadedRaw ?? {}) as Partial<CanvasCoverSettings> & {
+			frontmatterCoverKey?: string;
+		};
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, loaded);
+
+		const legacyCoverKey = typeof loaded.frontmatterCoverKey === "string" ? loaded.frontmatterCoverKey.trim() : "";
+		if (!this.settings.embedCoverKey) {
+			this.settings.embedCoverKey = legacyCoverKey || DEFAULT_SETTINGS.embedCoverKey;
+		}
+		if (!this.settings.canvasBackgroundCoverKey) {
+			this.settings.canvasBackgroundCoverKey = legacyCoverKey || DEFAULT_SETTINGS.canvasBackgroundCoverKey;
 		}
 	}
 

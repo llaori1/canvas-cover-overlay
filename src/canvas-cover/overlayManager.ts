@@ -29,7 +29,7 @@ export class OverlayManager {
 			return;
 		}
 
-		const coverUrl = await resolver.resolveCoverUrlForCanvas(embeddedCanvasFile);
+		const coverUrl = await resolver.resolveCoverUrlForCanvas(embeddedCanvasFile, settings.embedCoverKey);
 		if (!coverUrl) {
 			this.clearInContainer(containerEl);
 			return;

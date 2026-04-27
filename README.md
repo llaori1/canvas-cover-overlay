@@ -44,8 +44,8 @@ In your target canvas file, add frontmatter into advanced JSON canvas metadata:
 ## Settings
 
 - `Enable overlay`: master switch.
-- `Cover key`: primary key, default is `cover`.
-- `Fallback keys`: comma-separated fallback keys, default is `thumbnail,image`.
+- `Embed cover key`: frontmatter key for embedded canvas thumbnails, default is `cover`.
+- `Canvas background key`: frontmatter key for canvas view backgrounds, default is `cover`.
 - `Overlay opacity`: transparency of the cover layer.
 - `Debug mode`: console logs.
 

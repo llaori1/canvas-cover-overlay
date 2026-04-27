@@ -1,5 +1,5 @@
 {
-	"name": "canvas-cover",
+	"name": "canvas-cover-overlay",
 	"version": "1.0.2",
 	"description": "Customize each canvas with its own embedded canvas thumbnail and canvas view background.",
 	"main": "main.js",
